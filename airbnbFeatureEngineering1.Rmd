@@ -1,0 +1,72 @@
+```{r}
+# Load packages
+
+options( java.parameters = "-Xmx6g")
+
+library(dplyr)
+library(tidyr)
+
+# Create example data frame
+
+library(caret)
+
+library('tidyverse')
+library('tidymodels')
+library('plotly')
+library('skimr')
+library(ggplot2)
+library(mlr)
+library(xgboost)
+library(splitstackshape)
+library(janitor)
+
+train <- read_csv('airbnbTrain.csv')
+
+#creating column with count of amenitites
+
+train$amenities <- substr(as.character(train$amenities),
+                       start= 2, 
+                       stop= nchar(as.character(train$amenities) )-1 )
+
+#creating column of number of days the person has been host
+train$host_sinceD<-Sys.Date()-train$host_since
+train$host_sinceD<-as.numeric(train$host_sinceD)
+
+
+#creating dummy columns for each of the amenities.
+
+train<-cSplit_e(train, "amenities", type = "character", fill = 0)
+
+#creating new dataframe with just columns of amenities.
+train2<-train[,-c(1:67)]
+
+train2$host_sinceD[is.na(train2$host_sinceD)] <- mean(train2$host_sinceD, na.rm = TRUE)
+
+
+# cleaning the names of columns
+train2<-clean_names(train2)
+
+
+
+#removing _number pattern from columns. This pattern is beacuse of duplicated columns created after cleaning the names. Thus 
+#columns such as amenities_fixed_grab_bars_for_shower_2 is converted into amenities_fixed_grab_bars_for_shower, result of this is duplicate named column.
+names(train2) <- sub("\\_\\d+{1}$", "", names(train2))
+
+# adding columns with duplicate names and dropping the duplicatede column.
+
+dat<-train2
+
+indx <- sapply(dat, is.numeric)#check which columns are numeric
+nm1 <- which(indx)#get the numeric index of the column
+indx2 <- duplicated(names(nm1))|duplicated(names(nm1),fromLast=TRUE)
+nm2 <- nm1[indx2]
+indx3 <- duplicated(names(nm2))
+dat[nm2[!indx3]] <- Map(function(x,y) rowSums(x[y]), list(dat),split(nm2, names(nm2)))
+datN <- dat[ -nm2[indx3]]
+
+
+names(datN)
+
+
+```
+
