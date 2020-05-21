@@ -6,3 +6,5 @@ airbnbFeatureEngineering1 has preprocessing of amenities and host since columns.
 airbnbFeatureEngineering2 has preprocessing of all the other columns along with handling of missing values.
 
 airbnbFeatureEngineering3 has topic modeling on description column using LDA.
+
+airbnbModel has final xgboost model used along with hyperparameter tuning
